@@ -1,94 +1,37 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { ReferenceDataContext } from "../context/ReferenceDataContext";
+import { parseISO } from "date-fns";
 import moment from "moment";
-import { formatISO, parse, parseISO, setDate } from "date-fns";
+import "../../styles/header/searchEvent.scss";
 
 function SearchEvent() {
-  const {
-    currentDate,
-    data,
-    getId,
-    setGetId,
-    select,
-    setSelect,
-    setCurrentDate,
-  } = useContext(ReferenceDataContext);
-  const [error, setError] = useState(true);
-  const [search, setSearch] = useState("");
+  const { data, setCurrentDate,search, setSearch,display, setDisplay } = useContext(ReferenceDataContext);
 
   const [filterData, setFilterData] = useState([]);
-  // useEffect(() => {
-  //   axios
-  //     .get(`http://localhost:5169/appointments/event?Event=${search}`)
-  //     .then((response) => {
-  //       // setHint(response.data);
-  //     })
-  //     .catch((error) => {
-  //       setError(error.response.data);
-  //     });
-  // }, [search]);
-  // // console.log(error,'errormessage');
-  // const SearchItem = (item, event) => {
-  //   setSearch("");
-  //   // setGetId(id);
-  //   // setSearch("")
-  //   setSelect([item]);
-  //   // setHint([item]);
-  // };
-  // // console.log(getId);
-
-  // console.log(select, "selected event");
-  // // console.log(hint);
-  // // console.log(object);
-  // // var length=search.length;
-
-  // // console.log(axios.get("http://localhost:5169/appointments/event?Event=meet"))
 
   const handleFilter = (e) => {
-    // setSearch(e.target.search)
     const searchWord = e.target.value;
     setSearch(searchWord);
     const filter = data.filter((item) => {
       return item.eventName.toLowerCase().includes(searchWord.toLowerCase());
     });
     searchWord === "" ? setFilterData([]) : setFilterData(filter);
-
-    // if(searchWord === ""){
-    //   setFilterData([]);
-    // }
-    // else{
-    //   setFilterData(filter);
-
-    // }
-    // console.log(searchWord)
   };
   const getEvent = async (event) => {
-    // const searchWord= event;
-    setError(false);
+    setDisplay(false);
     setFilterData([]);
     setSearch(event);
     const response = await axios.get(
       `http://localhost:5169/appointments/event?Event=${event}`
     );
-    setSelect(response.data);
-
-    // .then (()=>{
-
-    // await setCurrentDate(parseISO(select.fromTime))
-    // const date = setDate(currentDate,select.fromTime);
-    // setCurrentDate(date);
-
-    // )
+    
+    setCurrentDate(parseISO(response.data.fromTime));
   };
-  const wordEntered = () => {
-    // select &&(
-    //   )
-  };
-  // console.log(select,"search")
-  console.log(parseISO(select.fromTime, "date"));
+  
+
   return (
     <div className="suggestion-container">
       <form className="search-box">
@@ -96,13 +39,12 @@ function SearchEvent() {
         <input
           className="text-area"
           type="text"
-          placeholder="Search"
+          placeholder="Search by event title"
           value={search}
           onChange={handleFilter}
         ></input>
-        {/* {console.log(search)} */}
       </form>
-      {(filterData.length === 0 && search.length !== 0 && error === true) ? (
+      {filterData.length === 0 && search.length !== 0 && display === true ? (
         <div className="suggestion-box">
           <div className="suggestion">No event found</div>
         </div>
@@ -113,7 +55,9 @@ function SearchEvent() {
               className="suggestion"
               onClick={() => getEvent(item.eventName)}
             >
-              {item.eventName}
+              <div>{item.eventName}</div>
+              <div>{moment(item.fromTime).format("Do MMM")}</div>
+              {console.log(moment(item.fromTime).format("Do MMM"))}
             </div>
           ))}
         </div>

@@ -1,45 +1,50 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleLeft, faAngleRight } from "@fortawesome/free-solid-svg-icons";
+import {
+  faAngleLeft,
+  faAngleRight,
+  faAngleDown,
+} from "@fortawesome/free-solid-svg-icons";
 import {
   startOfMonth,
   endOfMonth,
   differenceInDays,
-  sub,
-  add,
   format,
   setDate,
-  endOfWeek,
+  subDays,
+  parseISO
 } from "date-fns";
-import "../../styles/calendar.scss";
+import "../../styles/calendar/calendar.scss";
 import Cell from "./Cell";
 import { ReferenceDataContext } from "../context/ReferenceDataContext";
-import axios from "axios";
+import { ServicesContext } from "../Axios/ServicesContext";
 import Modal from "react-modal";
-import EventModal from "./EventModal";
+import EventModal from "../rightComponents/EventModal";
 
 function Calendar() {
-  const { data,setData, currentDate, setCurrentDate, prevMonth, nextMonth, getId, setGetId,select } =
-    useContext(ReferenceDataContext);
+  const {
+    data,
+    currentDate,
+    setCurrentDate,
+    prevMonth,
+    nextMonth,
+    setGetId,
+    setModal,
+    event,
+    setEvent,
+    setError,
+    setErrorPopUp,
+    passedTime,
+    getDate,filteredData, setFilteredData
+  } = useContext(ReferenceDataContext);
 
-    
-    useEffect(()=>{
-  
-      axios.get("http://localhost:5169/appointments").then((response) => {
-      // handle success
-      // console.log(response.data);
-      setData(response.data);
-    });
-    },[setData])
-    // console.log(select,"cal")
+  const { getAll, getByDate } = useContext(ServicesContext);
 
-  // console.log(id);
-  // const { input, setInput, data, setData } = props;
+  // const [filteredData, setFilteredData] = useState(false);
 
-  // const value = props.value;
-  // const onChange = props.onChange;
-  // const prevMonth = props.prevMonth;
-  // const nextMonth = props.nextMonth;
+  useEffect(() => {
+    getAll();
+  }, []);
 
   const weeks = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const startDate = startOfMonth(currentDate);
@@ -47,32 +52,33 @@ function Calendar() {
   const numDays = differenceInDays(endDate, startDate) + 1;
 
   const prefixDate = startDate.getDay();
-  const suffixDate = 6- endDate.getDay();
+  const suffixDate = 6 - endDate.getDay();
 
-  // console.log( endDate.getDay())
-  // const prevMonth=() =>{
-  //   onChange(sub(currentDate,{months:1}));
-  // }
-  // const nextMonth=() =>{
-  //   onChange(add(currentDate,{months:1}));
-  // }
   const selectedDate = (index) => {
     const date = setDate(currentDate, index);
     setCurrentDate(date);
-    console.log(currentDate,"date")
+    // console.log(currentDate, "date");
   };
-  // const [getId, setGetId] = useState();
-  const [event, setEvent] = useState(false);
 
   const eventClick = (id) => {
     setGetId(id);
-    setEvent(!event);
-    // console.log(event);
+    setEvent(true);
   };
-  // console.log(select.fromTime);
+  const createModal = (index) => {
+    const date = setDate(currentDate, index);
+    date < subDays(new Date(), 1)
+      ? setError("Event can't be created - Time has passed")
+      : setModal(true);
+    // console.log(date)
+  };
+  const handleDropDown = () => {
+    setFilteredData(!filteredData)
+    getByDate();
+    console.log(getDate, "hi");
+  };
+
   return (
     <div>
-      {/* <div>Selected Date:{format(currentDate,"dd LLLL yyyy")}</div> */}
       <div className="calendar-container">
         <div className="calendar-angle" onClick={() => prevMonth()}>
           <Cell>
@@ -81,6 +87,7 @@ function Calendar() {
         </div>
         <div className="calendar-month">
           <Cell>{format(currentDate, "LLLL yyyy")}</Cell>
+          {/* <FontAwesomeIcon icon={faAngleDown}/> */}
         </div>
         <div className="calendar-angle" onClick={() => nextMonth()}>
           <Cell>
@@ -101,164 +108,76 @@ function Calendar() {
         {Array.from({ length: numDays }).map((_, index) => {
           const date = index + 1;
           const isCurrentDate = date === currentDate.getDate();
-
-          // select ? (isCurrentDate = select.fromTime.slice(8,10)) : 
-
-          console.log(currentDate,"currentDate");
+          const getData = data.filter((item) => {
+            console.log()
+            return (
+              format(parseISO(item.fromTime),"yyyy-MM-dd") ===
+              format(setDate(currentDate, date), "yyyy-MM-dd")
+            );
+          });
 
           return (
-            <div className="calendar-item" onClick={() => selectedDate(date)}>
+            <div
+              className="calendar-item"
+              onClick={() => selectedDate(date)}
+              onDoubleClick={() => createModal(date)}
+            >
               <Cell key={date} isActive={isCurrentDate}>
                 <div>{date}</div>
               </Cell>
               <Cell>
-                {data &&
-                  data.map(
-                    (item) =>
-                      item.fromTime.slice(0,10) ===
-                        format(setDate(currentDate, date), "yyyy-MM-dd") && (
+                {getData &&
+                  getData.slice(0, 1).map((item) => {
+                    return (
+                      <div>
                         <div
                           className="display-event"
-                          onClick={() => {
-                            eventClick(item.id);
-                          }}
+                          onClick={handleDropDown}
                         >
                           {item.eventName}
+                          {getData.length > 1 && (
+                            <FontAwesomeIcon
+                              className="drop-icon"
+                              icon={faAngleDown}
+                            />
+                          )}
                         </div>
-                      )
-                  )}
+                        <div
+                          className={
+                            getDate && filteredData ? "dropdown-content" : "display-none"
+                          }
+                        >
+                          {(getDate && filteredData ) &&
+                            getDate.map((item) => {
+                              return (
+                                format(parseISO(item.fromTime),"yyyy-MM-dd") ===
+                                  format(
+                                    setDate(currentDate, date),
+                                    "yyyy-MM-dd"
+                                  ) && (
+                                  <div className="hover-display-event">
+                                    {item.eventName}
+                                  </div>
+                                )
+                              );
+                            })}
+                        </div>
+                      </div>
+                    );
+                  })}
               </Cell>
-           
-              
             </div>
           );
         })}
+
         {Array.from({ length: suffixDate }).map((date, index) => (
           <div className="calendar-item">
             <Cell></Cell>
           </div>
         ))}
-        {event && (
-          <Modal isOpen={event} ariaHideApp={false} className="modal">
-            <EventModal eventClick={eventClick} getId={getId} />
-          </Modal>
-        )}
       </div>
     </div>
   );
 }
 
 export default Calendar;
-
-// //{data.map((item)=>console.log(item.title))}
-
-// import React, { useContext } from "react";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faAngleLeft, faAngleRight } from "@fortawesome/free-solid-svg-icons";
-// import {
-//   startOfMonth,
-//   endOfMonth,
-//   differenceInDays,
-//   sub,
-//   add,
-//   format,
-//   setDate,
-//   endOfWeek,
-// } from "date-fns";
-// import "../../styles/calendar.scss";
-// import Cell from "./Cell";
-// import {ReferenceDataContext} from "../context/ReferenceDataContext"
-// import useCreateEvent from "../context/useCreateEvent";
-
-// function Calendar() {
-
-//   const { data,value,onChange,prevMonth,nextMonth} = useContext(ReferenceDataContext);
-//   // const { input, setInput, data, setData } = props;
-
-//   // const value = props.value;
-//   // const onChange = props.onChange;
-//   // const prevMonth = props.prevMonth;
-//   // const nextMonth = props.nextMonth;
-
-//   const weeks = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-//   const startDate = startOfMonth(value);
-//   const endDate = endOfMonth(value);
-//   const numDays = differenceInDays(endDate, startDate) + 1;
-
-//   const prefixDate = startDate.getDay();
-//   const suffixDate = 6 - endDate.getDay();
-
-//   // const prevMonth=() =>{
-//   //   onChange(sub(value,{months:1}));
-//   // }
-//   // const nextMonth=() =>{
-//   //   onChange(add(value,{months:1}));
-//   // }
-//   const selectedDate = (index) => {
-//     const date = setDate(value, index);
-//     onChange(date);
-//   };
-
-//   return (
-//     <div>
-//       {/* <div>Selected Date:{format(value,"dd LLLL yyyy")}</div> */}
-//       <div className="calendar-container">
-//         <div className="calendar-angle" onClick={() => prevMonth()}>
-//           <Cell>
-//             <FontAwesomeIcon icon={faAngleLeft} />
-//           </Cell>
-//         </div>
-//         <div className="calendar-month">
-//           <Cell>{format(value, "LLLL yyyy")}</Cell>
-//         </div>
-//         <div className="calendar-angle" onClick={() => nextMonth()}>
-//           <Cell>
-//             <FontAwesomeIcon icon={faAngleRight} />
-//           </Cell>
-//         </div>
-//         {weeks.map((week) => (
-//           <div className="calendar-week">
-//             <Cell>{week}</Cell>
-//           </div>
-//         ))}
-//         {Array.from({ length: prefixDate }).map((date, index) => (
-//           <div className="calendar-item">
-//             <Cell></Cell>
-//           </div>
-//         ))}
-
-//         {Array.from({ length: numDays }).map((_, index) => {
-//           const date = index + 1;
-//           const isCurrentDate = date === value.getDate();
-
-//           // console.log(value.getDate());
-
-//           return (
-//             <div className="calendar-item" onClick={() => selectedDate(date)}>
-//               <Cell key={date} isActive={isCurrentDate}>
-//                 <div>{date}</div>
-//               </Cell>
-//               <Cell>
-//                 {data &&
-//                   data.map(
-//                     (item) =>
-//                       item.date ===
-//                         format(setDate(value, date), "yyyy-MM-dd") && (
-//                         <div className="display-event">{item.title}</div>
-//                       )
-//                   )}
-//               </Cell>
-//             </div>
-//           );
-//         })}
-//         {Array.from({ length: suffixDate }).map((date, index) => (
-//           <div className="calendar-item">
-//             <Cell></Cell>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default Calendar;

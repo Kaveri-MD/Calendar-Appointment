@@ -1,61 +1,34 @@
-// import {useState} from 'react'
-// import {sub,add} from "date-fns";
-
-// function useMonth() {
-//     const [currentDate,setCurrentDate] = useState(new Date());
-//     const value = currentDate;
-//     const onChange = setCurrentDate;
-//     const prevMonth=() =>{
-//         onChange(sub(value,{months:1}));
-//     }
-//     const nextMonth=() =>{
-//         onChange(add(value,{months:1}));
-//     }
-//     return[prevMonth,nextMonth,value,onChange];
-// }
-
-// export default useMonth
-
 import { useState, createContext } from "react";
 import { sub, add } from "date-fns";
-import axios from "axios";
 
 const ReferenceDataContext = createContext();
 
 const ReferenceDataContextProvider = ({ children }) => {
-  const [display, setDisplay] = useState(true);
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [input, setInput] = useState({ title: "", date: "", from: "", to: "" });
   const [data, setData] = useState([]);
   const [getId, setGetId] = useState();
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [select, setSelect] = useState([]);
-  // const [modal, setModal] = useState(false);
+  const [day, setDay] = useState(false);
+  const [error, setError] = useState('');
+  const [errorPopUp, setErrorPopUp] = useState(false);
+  const [modal, setModal] = useState(false);
+  const [angle, setAngle] = useState(false);
+  const [monthAngle, setMonthAngle] = useState(false);
+  const [search, setSearch] = useState("");
+  const [display, setDisplay] = useState(true);
+  const [event, setEvent] = useState(false);
+  const [getDate,setGetDate]= useState();
+  const [filteredData, setFilteredData] = useState(false);
 
-  // const [getData,setGetData] =useState([]);
-
-  const view = () => {
-    setDisplay(!display);
-  };
-  // const value = currentDate;
-  // const onChange = setCurrentDate;
-  // console.log(setCurrentDate);
   const prevMonth = () => {
-    setCurrentDate(sub(currentDate , { months: 1 }));
+    setCurrentDate(sub(currentDate, { months: 1 }));
   };
+
   const nextMonth = () => {
-    setCurrentDate(add(currentDate , { months: 1 }));
+    setCurrentDate(add(currentDate, { months: 1 }));
   };
 
-  // const toggleModal = () => {
-  //   setModal(!modal);
-  //   console.log(modal);
-  // };
 
-  // axios.get("http://localhost:5169/appointments").then((response) => {
-  //   // handle success
-  //   // console.log(response.data);
-  //   setData(response.data);
-  // });
 
   return (
     <ReferenceDataContext.Provider
@@ -64,16 +37,20 @@ const ReferenceDataContextProvider = ({ children }) => {
         setCurrentDate,
         prevMonth,
         nextMonth,
-        input,
-        setInput,
         data,
         setData,
-        display,
-        view,
         getId,
         setGetId,
-        select, 
-        setSelect
+        select,
+        setSelect,
+        day,
+        setDay,
+        error,
+        setError,
+        errorPopUp,
+        setErrorPopUp,
+        modal,
+        setModal,angle, setAngle,monthAngle, setMonthAngle,search, setSearch,display, setDisplay,event, setEvent,getDate,setGetDate,filteredData, setFilteredData
       }}
     >
       {children}

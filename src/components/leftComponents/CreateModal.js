@@ -1,28 +1,68 @@
-import React, { useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import { useState } from "react";
 import { ReferenceDataContext } from "../context/ReferenceDataContext";
-import axios from "axios";
 import moment from "moment";
-import { faUserInjured } from "@fortawesome/free-solid-svg-icons";
 import uuid from "react-uuid";
+import { formatISO, parseISO, subDays, subHours, subMinutes } from "date-fns";
+import { ServicesContext } from "../Axios/ServicesContext";
+import "../../styles/leftNavigation/createModal.scss";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretUp } from "@fortawesome/free-solid-svg-icons";
 
 function CreateModal(props) {
-  // const[input,setInput,data,setData] = useCreateEvent();
-  // const [input,setInput] = useState({title:"",date:"",from:"",to:""});
-  // const [title,setTitle] = useState("");
-  // const [date,setDate] = useState("");
-  // const [from,setFrom] = useState("");
-  // const [to,setTo] = useState("");
-  // const [data,setData] = useState([]);
+  const { modal, setModal } = props;
+  const { data, setError, getId, setIcon, setGetId, currentDate ,setErrorPopUp} =
+    useContext(ReferenceDataContext);
+  const { create, updateEvent } = useContext(ServicesContext);
+  const [field,setField] = useState(false)
 
-  // useEffect(()=>{
-  //   addInput()
-  // },[])
-  const { input, setInput, data, setData } = useContext(ReferenceDataContext);
-  // const {input,setInput,data,setData} = props
-  // console.log(moment(input.date + '' +input.to,'YYYY-MM-DDTHH:mm:ss').format("YYYY-MM-DDTHH:mm:ss"))
-  const addInput = (e) => {
-    console.log(input.title);
+  const filteredEvent = data.filter((item) => {
+    return item.id === getId;
+  });
+  // console.log(filteredEvent.fromTime)
+
+  const handleInput = () => {
+    return getId
+    ? {
+          title: filteredEvent[0].eventName,
+          date: filteredEvent[0].fromTime.slice(0, 10),
+          from: filteredEvent[0].fromTime.slice(11, 16),
+          to: filteredEvent[0].toTime.slice(11, 16),
+        }
+      : {
+          title: "",
+          date: formatISO(currentDate).slice(0, 10),
+          from: "",
+          to: "",
+        };
+
+  };
+
+  const [input, setInput] = useState(handleInput());
+
+  const UpdateItem = () => {
+    const editItem = {
+      id: filteredEvent[0].id,
+      eventName: input.title,
+      fromTime: moment(
+        input.date + "" + input.from,
+        "YYYY-MM-DDTHH:mm:ss"
+      ).format("YYYY-MM-DDTHH:mm:ss"),
+      toTime: moment(input.date + "" + input.to, "YYYY-MM-DDTHH:mm:ss").format(
+        "YYYY-MM-DDTHH:mm:ss"
+      ),
+    };
+
+    if (parseISO(editItem.fromTime) < subMinutes(new Date(),1)) {
+      setError("Event can't be created - Time has passed");
+    } else {
+      updateEvent(editItem);
+      setInput("");
+    }
+    // setIcon(false);
+    setGetId("");
+  };
+  const CreateEvent = () => {
     const createItem = {
       id: uuid(),
       eventName: input.title,
@@ -34,26 +74,33 @@ function CreateModal(props) {
         "YYYY-MM-DDTHH:mm:ss"
       ),
     };
-    // e.preventDefault();
-    axios.post("http://localhost:5169/appointments", createItem);
-    // setData([...data,post.data])
-    console.log(data, "data");
-    props.toggleModal();
-    setInput("");
-    // setData([input,...data]);
-
-    // console.log(input);
-    // setData()
+    if (parseISO(createItem.fromTime) < subMinutes(new Date(),1) ) {
+      setError("Event can't be created - Time has passed");
+    } else {
+      create(createItem);
+      setInput("");
+    }
   };
-  const Close = () =>{
-    props.toggleModal();
-    setInput("")
-  }
+  const addInput = (e) => {
+    if ((input.title && input.from && input.to) === "") {
+      setField(true)
+      setModal(true);
+    } else {
+      getId ? UpdateItem() : CreateEvent();
+      setModal(false);
+    }
+  };
+  const close = () => {
+    setModal(false);
+    // console.log(modal);
+    setInput("");
+    setGetId("");
+  };
+  
   return (
     <div>
-      <div className=""></div>
       <div className="modal-content">
-        <div className="add">NEW EVENT</div>
+        <div className="add">{getId ? "EVENT" : "NEW EVENT"}</div>
         <form onSubmit={addInput}>
           <div className="title">
             <div className="title-text">Title</div>
@@ -62,13 +109,23 @@ function CreateModal(props) {
               value={input.title}
               onChange={(e) => setInput({ ...input, title: e.target.value })}
             ></input>
+            { (field && input.title==="") &&
+            (<div className="form-error">
+              <FontAwesomeIcon icon={faCaretUp} className="form-error-angle" />
+              <div className="form-error-text">
+                Please fill out this field !!
+              </div>
+            </div>)
+            }
           </div>
+
           <div className="date">
             <div className="date-text">Date</div>
             <input
               type="date"
               value={input.date}
               onChange={(e) => setInput({ ...input, date: e.target.value })}
+              min={moment(new Date()).format("yyyy-MM-DD")}
             ></input>
           </div>
           <div className="from-time">
@@ -78,6 +135,14 @@ function CreateModal(props) {
               value={input.from}
               onChange={(e) => setInput({ ...input, from: e.target.value })}
             ></input>
+            { (field && input.from==="") &&
+            (<div className="form-error">
+              <FontAwesomeIcon icon={faCaretUp} className="form-error-angle" />
+              <div className="form-error-text">
+                Please fill out this field !!
+              </div>
+            </div>)
+            }
           </div>
           <div className="to-time">
             <div className="to-text">To</div>
@@ -86,9 +151,18 @@ function CreateModal(props) {
               value={input.to}
               onChange={(e) => setInput({ ...input, to: e.target.value })}
             ></input>
+            { (field && input.to==="") &&
+            (<div className="form-error">
+              <FontAwesomeIcon icon={faCaretUp} className="form-error-angle" />
+              <div className="form-error-text">
+                Please fill out this field !!
+              </div>
+            </div>)
+            }
           </div>
         </form>
-        <button className="primary-button" onClick={Close}>
+
+        <button className="primary-button" onClick={close}>
           Close
         </button>
         <button className="primary-button" onClick={addInput}>
@@ -100,5 +174,3 @@ function CreateModal(props) {
 }
 
 export default CreateModal;
-
-// value={input.title} onChange={(e)=>setInput({...input,title:e.target.value})
