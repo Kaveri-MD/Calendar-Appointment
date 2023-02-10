@@ -20,7 +20,7 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  grid-column: span 5;
+  grid-column: span 3;
   cursor: pointer;
   font-weight: 200;
   font-size: 20px;
@@ -37,11 +37,16 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  box-sizing: border-box;
 }
-.display-event,.dropdown-content  {
+// .calendar-item:hover{
+//   border-radius: 100%;
+//   border: 2px solid #bd2e7a;
+// }
+.display-event,
+.dropdown-content {
   display: none;
 }
- 
 
 .today {
   display: flex;
@@ -54,7 +59,6 @@
   border-radius: 100%;
   margin: 2px;
 }
-
 
 .event-container {
   border: 1px solid black;

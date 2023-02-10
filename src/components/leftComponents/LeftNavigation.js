@@ -7,40 +7,41 @@ import Modal from "react-modal";
 import CreateModal from "./CreateModal";
 import { ReferenceDataContext } from "../context/ReferenceDataContext";
 import { subDays } from "date-fns";
+import Month from "../Calendar/Month";
+import Year from "../Calendar/Year";
 
 function LeftNavigation() {
-  const { modal, setModal,setAngle, setMonthAngle,currentDate,setError, setErrorPopUp ,error} = useContext(ReferenceDataContext);
-  
+  const {
+    modal,
+    setModal,
+    currentDate,
+    setError,
+    calendar,
+    yearAngle,
+    monthAngle,
+  } = useContext(ReferenceDataContext);
+
   const toggleModal = () => {
+    currentDate < subDays(new Date(), 1)
+      ? setError("Event can't be created - Time has passed")
+      : setModal(!modal);
+  };
 
-    currentDate < subDays(new Date(),1) ? setError("Event can't be created - Time has passed"):setModal(!modal);
-    // setError("Event can't be created - Time has passed");
-    // console.log(error,"hi");
-  }
-
-  // const createError =()=>{
-  //   setError("Event can't be created - Time has passed")
-  // }
   if (modal) {
     document.body.classList.add("active-modal");
   } else {
     document.body.classList.remove("active-modal");
   }
 
-  const closePopUp=()=>{
-    setAngle(false)
-    setMonthAngle(false)
-  }
-  console.log(currentDate);
-  // currentDate < subDays(new Date(),1) ? createError() : toggleModal
-
   return (
-    <div className="left-navigation" onClick={closePopUp}>
+    <div className="left-navigation">
       <button onClick={toggleModal} className="create">
         <FontAwesomeIcon className="plus" icon={faPlus} />
         Create
       </button>
-      <Calendar />
+      {calendar && <Calendar />}
+      {monthAngle && <Month />}
+      {yearAngle && <Year />}
 
       {modal && (
         <Modal isOpen={modal} ariaHideApp={false} className="modal">

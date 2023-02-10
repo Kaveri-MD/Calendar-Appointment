@@ -1,0 +1,24 @@
+.calendar-year-container{
+    display: grid;
+    width: 335px;
+    height: 335px;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 50px auto;
+    background-color: #100333;
+    color: white;
+    border-radius: 25px;
+    box-shadow: 0px 2px 18px #f5d6e7;
+  }
+  .calendar-year-container .calendar-month {
+    grid-column: span 2;
+  }
+  // .calendar-month-container .calendar-item{
+  //   font-weight: bold;
+  // }
+  .calendar-year-container .calendar-item:hover{
+    // border-radius: 25px;
+    // background-color: #dbcffc;
+    // color: #100333;
+    border: 1px solid #dbcffc;
+    border-radius:4px ;
+  }

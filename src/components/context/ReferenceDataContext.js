@@ -9,16 +9,17 @@ const ReferenceDataContextProvider = ({ children }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [select, setSelect] = useState([]);
   const [day, setDay] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [errorPopUp, setErrorPopUp] = useState(false);
   const [modal, setModal] = useState(false);
-  const [angle, setAngle] = useState(false);
-  const [monthAngle, setMonthAngle] = useState(false);
   const [search, setSearch] = useState("");
   const [display, setDisplay] = useState(true);
   const [event, setEvent] = useState(false);
-  const [getDate,setGetDate]= useState();
+  const [getDate, setGetDate] = useState();
   const [filteredData, setFilteredData] = useState(false);
+  const [calendar, setCalendar] = useState(true);
+  const [yearAngle, setYearAngle] = useState(false);
+  const [monthAngle, setMonthAngle] = useState(false);
 
   const prevMonth = () => {
     setCurrentDate(sub(currentDate, { months: 1 }));
@@ -27,8 +28,6 @@ const ReferenceDataContextProvider = ({ children }) => {
   const nextMonth = () => {
     setCurrentDate(add(currentDate, { months: 1 }));
   };
-
-
 
   return (
     <ReferenceDataContext.Provider
@@ -50,7 +49,23 @@ const ReferenceDataContextProvider = ({ children }) => {
         errorPopUp,
         setErrorPopUp,
         modal,
-        setModal,angle, setAngle,monthAngle, setMonthAngle,search, setSearch,display, setDisplay,event, setEvent,getDate,setGetDate,filteredData, setFilteredData
+        setModal,
+        calendar,
+        setCalendar,
+        yearAngle,
+        setYearAngle,
+        monthAngle,
+        setMonthAngle,
+        search,
+        setSearch,
+        display,
+        setDisplay,
+        event,
+        setEvent,
+        getDate,
+        setGetDate,
+        filteredData,
+        setFilteredData,
       }}
     >
       {children}

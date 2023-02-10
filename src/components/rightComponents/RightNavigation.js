@@ -1,4 +1,4 @@
-import React, { useContext,useEffect } from "react";
+import React, { useContext} from "react";
 import "../../styles/rightNavigation/rightNavigation.scss";
 import DisplayTime from "./DisplayTime";
 import { Routes, Route } from "react-router-dom";
@@ -8,24 +8,25 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
 function RightNavigation() {
-  const { error,setError, errorPopUp, setErrorPopUp ,setAngle,setMonthAngle} = useContext(ReferenceDataContext);
- 
+  const {
+    error,
+    setError,
+    errorPopUp,
+    setErrorPopUp,
+  } = useContext(ReferenceDataContext);
 
   const handleXmark = () => {
     setErrorPopUp(false);
-    setError("")
+    setError("");
   };
-  const closePopUp=()=>{
-    setAngle(false)
-    setMonthAngle(false)
-  }
-  error && setErrorPopUp(true)
+  
+  error && setErrorPopUp(true);
 
-  console.log(error)
-  console.log(errorPopUp)
+  console.log(error);
+  console.log(errorPopUp);
   return (
-    <div className="right-navigation" onClick={closePopUp}>
-      {(error && errorPopUp) && (
+    <div className="right-navigation" >
+      {error && errorPopUp && (
         <div className="error-container">
           <FontAwesomeIcon
             className="x-mark"
@@ -47,6 +48,3 @@ function RightNavigation() {
 
 export default RightNavigation;
 
-// ref.scrollIntoView({
-//   behavior: 'smooth'
-// });
